@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ recipe.name }} | Blendora</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div>
+        <h1>🥤 {{ recipe.name }}</h1>
+        <p>{{ recipe.description }}</p>
+      </div>
+      <a class="button" href="{{ url_for('index', servings=servings) }}">Back to recipes</a>
+    </header>
+
+    <main class="recipe-detail">
+      <section class="detail-card">
+        <div class="detail-card__header">
+          <h2>Ingredients ({{ servings }})</h2>
+          <div class="servings-toggle">
+            <a class="button secondary" href="{{ url_for('recipe_detail', recipe_id=recipe.id, servings=1) }}">1 person</a>
+            <a class="button secondary" href="{{ url_for('recipe_detail', recipe_id=recipe.id, servings=2) }}">2 people</a>
+          </div>
+        </div>
+        <ul>
+          {% for ingredient in ingredients %}
+            <li>
+              <span>{{ ingredient.qty }}</span>
+              {% if ingredient.unit %}<span>{{ ingredient.unit }}</span>{% endif %}
+              <strong>{{ ingredient.name }}</strong>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+
+      <section class="detail-card">
+        <h2>Step-by-step instructions</h2>
+        <ol>
+          {% for step in recipe.instructions %}
+            <li>{{ step }}</li>
+          {% endfor %}
+        </ol>
+      </section>
+
+      <section class="detail-card">
+        <h2>Benefits</h2>
+        <ul class="benefit-list">
+          {% for benefit in benefits %}
+            <li>
+              <div>
+                <span class="benefit-name">{{ benefit.name }}</span>
+                <p class="benefit-desc">{{ benefit.description }}</p>
+              </div>
+              <span class="stars">
+                {% for star in range(benefit.rating) %}★{% endfor %}
+                {% for star in range(5 - benefit.rating) %}☆{% endfor %}
+              </span>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>

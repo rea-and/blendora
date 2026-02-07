@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Blendora</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div>
+        <h1>🥤 Blendora</h1>
+        <p>Browse smoothie recipes with benefits and flexible servings.</p>
+      </div>
+    </header>
+
+    <section class="filters">
+      <form method="get" action="{{ url_for('index') }}">
+        <div class="filter-layout">
+          <div class="filter-sidebar">
+            <div class="filter-group">
+              <span class="label">Servings</span>
+              <label>
+                <input type="radio" name="servings" value="1" {% if servings == 1 %}checked{% endif %} />
+                1 person
+              </label>
+              <label>
+                <input type="radio" name="servings" value="2" {% if servings == 2 %}checked{% endif %} />
+                2 people
+              </label>
+            </div>
+
+            <div class="filter-actions">
+              <a class="button secondary" href="{{ url_for('index', servings=servings) }}">Clear filters</a>
+            </div>
+          </div>
+
+          <div class="filter-main">
+            <fieldset class="filter-group">
+              <legend class="label">Must include</legend>
+              <div class="checkbox-grid">
+                {% for ingredient in ingredients %}
+                  <label class="checkbox-item">
+                    <input
+                      type="checkbox"
+                      name="include"
+                      value="{{ ingredient }}"
+                      {% if ingredient in include %}checked{% endif %}
+                    />
+                    {{ ingredient }}
+                  </label>
+                {% endfor %}
+              </div>
+            </fieldset>
+
+            <fieldset class="filter-group">
+              <legend class="label">Must exclude</legend>
+              <div class="checkbox-grid">
+                {% for ingredient in ingredients %}
+                  <label class="checkbox-item">
+                    <input
+                      type="checkbox"
+                      name="exclude"
+                      value="{{ ingredient }}"
+                      {% if ingredient in exclude %}checked{% endif %}
+                    />
+                    {{ ingredient }}
+                  </label>
+                {% endfor %}
+              </div>
+            </fieldset>
+
+            <fieldset class="filter-group">
+              <legend class="label">I have...</legend>
+              <p class="helper-text">Show only recipes that use ingredients you already have.</p>
+              <div class="checkbox-grid">
+                {% for ingredient in ingredients %}
+                  <label class="checkbox-item">
+                    <input
+                      type="checkbox"
+                      name="have"
+                      value="{{ ingredient }}"
+                      {% if ingredient in have %}checked{% endif %}
+                    />
+                    {{ ingredient }}
+                  </label>
+                {% endfor %}
+              </div>
+            </fieldset>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <main class="recipe-grid">
+      {% if recipes %}
+        {% for item in recipes %}
+          <article class="recipe-card">
+            <div class="recipe-card__header">
+              <h2>{{ item.recipe.name }}</h2>
+              <p>{{ item.recipe.description }}</p>
+              <a class="link" href="{{ url_for('recipe_detail', recipe_id=item.recipe.id, servings=servings) }}">
+                View details
+              </a>
+            </div>
+
+            <div class="recipe-card__section">
+              <h3>Ingredients ({{ servings }})</h3>
+              <ul>
+                {% for ingredient in item.ingredients %}
+                  <li>
+                    <span>{{ ingredient.qty }}</span>
+                    {% if ingredient.unit %}<span>{{ ingredient.unit }}</span>{% endif %}
+                    <strong>{{ ingredient.name }}</strong>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            <div class="recipe-card__section">
+              <h3>Benefits</h3>
+              <ul class="benefit-list">
+                {% for benefit in item.benefits %}
+                  <li>
+                    <span class="benefit-name">{{ benefit.name }}</span>
+                    <span class="stars">
+                      {% for star in range(benefit.rating) %}★{% endfor %}
+                      {% for star in range(5 - benefit.rating) %}☆{% endfor %}
+                    </span>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </article>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <h2>No recipes match those filters.</h2>
+          <p>Try removing ingredients from the exclude list or adding fewer requirements.</p>
+        </div>
+      {% endif %}
+    </main>
+
+    <script>
+      const filterForm = document.querySelector(".filters form");
+      if (filterForm) {
+        filterForm.addEventListener("change", () => {
+          filterForm.requestSubmit();
+        });
+      }
+    </script>
+  </body>
+</html>
