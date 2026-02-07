@@ -16,4 +16,9 @@ Open `http://127.0.0.1:5000` in your browser.
 ## Notes
 
 - Data is stored in `data/blendora.db` using SQLite.
-- The database seeds itself on first run with 5 filler recipes.
+- Seed data lives in `data/blendora.json` and loads on first run.
+- To reload the database after editing the JSON:
+
+```bash
+python scripts/update_db.py --reset
+```

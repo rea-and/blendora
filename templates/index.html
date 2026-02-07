@@ -30,7 +30,27 @@
               </label>
             </div>
 
+            <div class="filter-group">
+              <span class="label">Prioritize benefits</span>
+              <div class="checkbox-grid compact">
+                {% for benefit in benefits %}
+                  <label class="checkbox-item">
+                    <input
+                      type="checkbox"
+                      name="prioritize"
+                      value="{{ benefit.name }}"
+                      {% if benefit.name in prioritize %}checked{% endif %}
+                    />
+                    {{ benefit.name }}
+                  </label>
+                {% endfor %}
+              </div>
+            </div>
+
             <div class="filter-actions">
+              <a class="button tertiary" href="{{ url_for('index', servings=servings, favorites_only=1) }}">
+                All favorites
+              </a>
               <a class="button secondary" href="{{ url_for('index', servings=servings) }}">Clear filters</a>
             </div>
           </div>
@@ -95,14 +115,32 @@
     <main class="recipe-grid">
       {% if recipes %}
         {% for item in recipes %}
-          <article class="recipe-card">
-            <div class="recipe-card__header">
-              <h2>{{ item.recipe.name }}</h2>
-              <p>{{ item.recipe.description }}</p>
-              <a class="link" href="{{ url_for('recipe_detail', recipe_id=item.recipe.id, servings=servings) }}">
-                View details
-              </a>
-            </div>
+          <article
+            class="recipe-card"
+            data-href="{{ url_for('recipe_detail', recipe_id=item.recipe.id, servings=servings) }}"
+          >
+            <form class="favorite-form" method="post" action="{{ url_for('toggle_favorite', recipe_id=item.recipe.id) }}">
+              <input type="hidden" name="next" value="{{ request.full_path }}" />
+              <button
+                class="favorite-button {% if item.recipe.is_favorite %}is-favorite{% endif %}"
+                type="submit"
+                aria-label="Toggle favorite"
+              >
+                {% if item.recipe.is_favorite %}♥{% else %}♡{% endif %}
+              </button>
+            </form>
+              {% if item.recipe.image_url %}
+                <img
+                  class="recipe-card__image"
+                  src="{{ item.recipe.image_url }}"
+                  alt="{{ item.recipe.name }}"
+                  loading="lazy"
+                />
+              {% endif %}
+              <div class="recipe-card__header">
+                <h2>{{ item.recipe.name }}</h2>
+                <p>{{ item.recipe.description }}</p>
+              </div>
 
             <div class="recipe-card__section">
               <h3>Ingredients ({{ servings }})</h3>
@@ -117,20 +155,20 @@
               </ul>
             </div>
 
-            <div class="recipe-card__section">
-              <h3>Benefits</h3>
-              <ul class="benefit-list">
-                {% for benefit in item.benefits %}
-                  <li>
-                    <span class="benefit-name">{{ benefit.name }}</span>
-                    <span class="stars">
-                      {% for star in range(benefit.rating) %}★{% endfor %}
-                      {% for star in range(5 - benefit.rating) %}☆{% endfor %}
-                    </span>
-                  </li>
-                {% endfor %}
-              </ul>
-            </div>
+              <div class="recipe-card__section">
+                <h3>Benefits</h3>
+                <ul class="benefit-list">
+                  {% for benefit in item.benefits %}
+                    <li>
+                      <span class="benefit-name">{{ benefit.name }}</span>
+                      <span class="stars">
+                        {% for star in range(benefit.rating) %}★{% endfor %}
+                        {% for star in range(5 - benefit.rating) %}☆{% endfor %}
+                      </span>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
           </article>
         {% endfor %}
       {% else %}
@@ -148,6 +186,15 @@
           filterForm.requestSubmit();
         });
       }
+
+      document.querySelectorAll(".recipe-card").forEach((card) => {
+        const href = card.dataset.href;
+        if (!href) return;
+        card.addEventListener("click", (event) => {
+          if (event.target.closest(".favorite-form")) return;
+          window.location.href = href;
+        });
+      });
     </script>
   </body>
 </html>

@@ -12,10 +12,26 @@
         <h1>🥤 {{ recipe.name }}</h1>
         <p>{{ recipe.description }}</p>
       </div>
-      <a class="button" href="{{ url_for('index', servings=servings) }}">Back to recipes</a>
+      <div class="header-actions">
+        <form method="post" action="{{ url_for('toggle_favorite', recipe_id=recipe.id) }}">
+          <input type="hidden" name="next" value="{{ request.full_path }}" />
+          <button
+            class="favorite-button large {% if recipe.is_favorite %}is-favorite{% endif %}"
+            type="submit"
+          >
+            {% if recipe.is_favorite %}♥{% else %}♡{% endif %}
+          </button>
+        </form>
+        <a class="button" href="{{ url_for('index', servings=servings) }}">Back to recipes</a>
+      </div>
     </header>
 
     <main class="recipe-detail">
+      {% if recipe.image_url %}
+        <section class="detail-card">
+          <img class="recipe-detail__image" src="{{ recipe.image_url }}" alt="{{ recipe.name }}" />
+        </section>
+      {% endif %}
       <section class="detail-card">
         <div class="detail-card__header">
           <h2>Ingredients ({{ servings }})</h2>

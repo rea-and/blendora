@@ -1,0 +1,160 @@
+{
+    "ingredients": [
+      "Blueberry","Strawberry","Raspberry","Blackberry",
+      "Apple","Pear","Orange","Kiwi","Pineapple","Mango","Papaya",
+      "Cucumber","Celery","Carrot","Beetroot",
+      "Spinach","Kale","Mint","Parsley",
+      "Ginger","Turmeric","Lemon","Lime",
+      "Coconut Water","Water","Ice",
+      "Chia Seeds","Flax Seeds","Pumpkin Seeds",
+      "Almond Butter","Walnut","Dates","Honey"
+    ],
+    "benefits": [
+      {"name":"Immunity","description":"Supports immune defense and recovery."},
+      {"name":"Energy","description":"Clean sustained energy without spikes."},
+      {"name":"Gut Calm","description":"Gentle on digestion and reduces bloating."},
+      {"name":"Anti-inflammatory","description":"Helps reduce inflammation and stress load."}
+    ],
+    "recipes":[
+  
+      {
+        "name":"Berry Immune Shield",
+        "description":"Antioxidant-rich and bright.",
+        "image_url":"https://www.bektrom.com/wp-content/uploads/2023/09/shutterstock_319268696-scaled.jpg",
+        "instructions":["Blend all until smooth."],
+        "ingredients":{
+          "Blueberry":{"qty_1":"1 cup","qty_2":"2 cups"},
+          "Strawberry":{"qty_1":"1 cup","qty_2":"2 cups"},
+          "Coconut Water":{"qty_1":"3/4 cup","qty_2":"1 1/2 cups"},
+          "Chia Seeds":{"qty_1":"1 tsp","qty_2":"2 tsp"}
+        },
+        "benefits":{"Immunity":5,"Energy":4,"Gut Calm":4,"Anti-inflammatory":5}
+      },
+  
+      {
+        "name":"Pear Ginger Calm",
+        "description":"Very gentle, soothing and light.",
+        "image_url":"https://happyhealthymama.com/wp-content/uploads/2019/02/Pear-Ginger-Smoothie-2.jpg",
+        "instructions":["Blend until silky."],
+        "ingredients":{
+          "Pear":{"qty_1":"1","qty_2":"2"},
+          "Ginger":{"qty_1":"small slice","qty_2":"2 slices"},
+          "Water":{"qty_1":"3/4 cup","qty_2":"1 1/2 cups"},
+          "Flax Seeds":{"qty_1":"1 tsp","qty_2":"2 tsp"}
+        },
+        "benefits":{"Immunity":3,"Energy":3,"Gut Calm":5,"Anti-inflammatory":4}
+      },
+  
+      {
+        "name":"Green Clean Detox",
+        "description":"Light cleansing greens.",
+        "image_url":"https://detoxinista.com/wp-content/uploads/2019/07/detox-smoothie-recipe-1-500x500.jpg",
+        "instructions":["Blend well."],
+        "ingredients":{
+          "Cucumber":{"qty_1":"1/2","qty_2":"1"},
+          "Spinach":{"qty_1":"1 cup","qty_2":"2 cups"},
+          "Lemon":{"qty_1":"1 tsp juice","qty_2":"2 tsp juice"},
+          "Coconut Water":{"qty_1":"1 cup","qty_2":"2 cups"}
+        },
+        "benefits":{"Immunity":4,"Energy":4,"Gut Calm":5,"Anti-inflammatory":4}
+      },
+  
+      {
+        "name":"Golden Turmeric Glow",
+        "description":"Anti-inflammatory booster.",
+        "image_url":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKh542GI7Ak31K82jezyAujAkN5-ilA_ZMLA&s",
+        "instructions":["Blend thoroughly."],
+        "ingredients":{
+          "Mango":{"qty_1":"1/2 cup","qty_2":"1 cup"},
+          "Turmeric":{"qty_1":"pinch","qty_2":"2 pinches"},
+          "Ginger":{"qty_1":"small slice","qty_2":"2 slices"},
+          "Coconut Water":{"qty_1":"1 cup","qty_2":"2 cups"}
+        },
+        "benefits":{"Immunity":5,"Energy":4,"Gut Calm":4,"Anti-inflammatory":5}
+      },
+  
+      {
+        "name":"Citrus Morning Lift",
+        "description":"Bright, refreshing wake-up.",
+        "image_url":"https://www.spoonfulofflavor.com/wp-content/uploads/2021/06/mango-pineapple-smoothie.jpg",
+        "instructions":["Blend smooth."],
+        "ingredients":{
+          "Orange":{"qty_1":"1","qty_2":"2"},
+          "Carrot":{"qty_1":"1/2","qty_2":"1"},
+          "Ginger":{"qty_1":"small slice","qty_2":"2 slices"},
+          "Water":{"qty_1":"1 cup","qty_2":"2 cups"}
+        },
+        "benefits":{"Immunity":5,"Energy":5,"Gut Calm":4,"Anti-inflammatory":4}
+      },
+  
+      {
+        "name":"Cooling Cucumber Mint",
+        "description":"Hydrating and calming.",
+        "image_url":"https://happyhealthymama.com/wp-content/uploads/2017/05/ChickenandSummerSmoothie-23.jpg",
+        "instructions":["Blend lightly."],
+        "ingredients":{
+          "Cucumber":{"qty_1":"1","qty_2":"2"},
+          "Mint":{"qty_1":"5 leaves","qty_2":"10 leaves"},
+          "Lime":{"qty_1":"1 tsp juice","qty_2":"2 tsp juice"},
+          "Coconut Water":{"qty_1":"1 cup","qty_2":"2 cups"}
+        },
+        "benefits":{"Immunity":3,"Energy":4,"Gut Calm":5,"Anti-inflammatory":3}
+      },
+  
+      {
+        "name":"Apple Kiwi Clean Energy",
+        "description":"Fresh, light and uplifting.",
+        "image_url":"https://www.simplywhisked.com/wp-content/uploads/2020/01/Kiwi-Smoothies-3.jpg",
+        "instructions":["Blend until smooth."],
+        "ingredients":{
+          "Apple":{"qty_1":"1","qty_2":"2"},
+          "Kiwi":{"qty_1":"1","qty_2":"2"},
+          "Water":{"qty_1":"3/4 cup","qty_2":"1 1/2 cups"},
+          "Chia Seeds":{"qty_1":"1 tsp","qty_2":"2 tsp"}
+        },
+        "benefits":{"Immunity":4,"Energy":5,"Gut Calm":4,"Anti-inflammatory":4}
+      },
+  
+      {
+        "name":"Pineapple Digest Ease",
+        "description":"Supports digestion gently.",
+        "image_url":"https://www.spoonfulofkindness.com/wp-content/uploads/2022/11/pineapple-detox-smoothie.webp",
+        "instructions":["Blend smooth."],
+        "ingredients":{
+          "Pineapple":{"qty_1":"1 cup","qty_2":"2 cups"},
+          "Ginger":{"qty_1":"small slice","qty_2":"2 slices"},
+          "Coconut Water":{"qty_1":"1 cup","qty_2":"2 cups"}
+        },
+        "benefits":{"Immunity":4,"Energy":4,"Gut Calm":5,"Anti-inflammatory":4}
+      },
+  
+      {
+        "name":"Berry Anti-Inflammatory",
+        "description":"Deep antioxidant blend.",
+        "image_url":"https://scontent.fsin16-1.fna.fbcdn.net/v/t39.30808-6/615472210_26133815589537554_6147169773196014324_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=n_XeDYL1by4Q7kNvwEdoQUU&_nc_oc=AdntOKA0Dk8bVfX2P3xfENVJpBfJjL2nWRs1kMI6EbsaPbexEvogs4U1byTiuRD1n9s&_nc_zt=23&_nc_ht=scontent.fsin16-1.fna&_nc_gid=B3k834BTZUkTzLtJzGtC_A&oh=00_AfsP6gjeO_PDm-tyL5W8eHcz1QsX2YjBLqWR0wtIyIhf0w&oe=698CA3DC",
+        "instructions":["Blend well."],
+        "ingredients":{
+          "Raspberry":{"qty_1":"1/2 cup","qty_2":"1 cup"},
+          "Blackberry":{"qty_1":"1/2 cup","qty_2":"1 cup"},
+          "Blueberry":{"qty_1":"1/2 cup","qty_2":"1 cup"},
+          "Water":{"qty_1":"1 cup","qty_2":"2 cups"}
+        },
+        "benefits":{"Immunity":5,"Energy":4,"Gut Calm":4,"Anti-inflammatory":5}
+      },
+  
+      {
+        "name":"Papaya Gut Repair",
+        "description":"Very soothing and digestive.",
+        "image_url":"https://simplegreensoul.com/wp-content/uploads/2024/07/DSC06217.jpg",
+        "instructions":["Blend until creamy."],
+        "ingredients":{
+          "Papaya":{"qty_1":"1 cup","qty_2":"2 cups"},
+          "Lime":{"qty_1":"1 tsp juice","qty_2":"2 tsp juice"},
+          "Water":{"qty_1":"3/4 cup","qty_2":"1 1/2 cups"}
+        },
+        "benefits":{"Immunity":4,"Energy":3,"Gut Calm":5,"Anti-inflammatory":4}
+      }
+  
+      
+    ]
+  }

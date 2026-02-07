@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
@@ -12,6 +11,7 @@ from flask import Flask, redirect, render_template, request, url_for
 
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "data" / "blendora.db"
+SEED_JSON_PATH = BASE_DIR / "data" / "blendora.json"
 
 app = Flask(__name__)
 
@@ -22,6 +22,8 @@ class Recipe:
     name: str
     description: str
     instructions: list[str]
+    image_url: str | None = None
+    is_favorite: bool = False
 
 
 def get_db() -> sqlite3.Connection:
@@ -33,6 +35,17 @@ def get_db() -> sqlite3.Connection:
 
 def init_db() -> None:
     conn = get_db()
+    ensure_schema(conn)
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) AS count FROM recipes;")
+    count = cur.fetchone()["count"]
+    if count == 0:
+        seed_from_json(conn, load_seed_json())
+
+    conn.close()
+
+
+def ensure_schema(conn: sqlite3.Connection) -> None:
     cur = conn.cursor()
     cur.executescript(
         """
@@ -40,7 +53,9 @@ def init_db() -> None:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             description TEXT NOT NULL,
-            instructions_json TEXT NOT NULL
+            instructions_json TEXT NOT NULL,
+            image_url TEXT,
+            is_favorite INTEGER NOT NULL DEFAULT 0
         );
 
         CREATE TABLE IF NOT EXISTS ingredients (
@@ -76,228 +91,63 @@ def init_db() -> None:
         """
     )
     conn.commit()
-
-    cur.execute("SELECT COUNT(*) AS count FROM recipes;")
-    count = cur.fetchone()["count"]
-    if count == 0:
-        seed_data(conn)
-
-    conn.close()
+    ensure_recipe_image_column(conn)
+    ensure_recipe_favorite_column(conn)
 
 
-def seed_data(conn: sqlite3.Connection) -> None:
-    ingredients = [
-        "Banana",
-        "Strawberry",
-        "Blueberry",
-        "Spinach",
-        "Kale",
-        "Almond Milk",
-        "Greek Yogurt",
-        "Honey",
-        "Chia Seeds",
-        "Mango",
-        "Pineapple",
-        "Oats",
-        "Cocoa Powder",
-        "Avocado",
-        "Coconut Water",
-    ]
+def ensure_recipe_image_column(conn: sqlite3.Connection) -> None:
+    cur = conn.cursor()
+    cur.execute("PRAGMA table_info(recipes);")
+    columns = {row["name"] for row in cur.fetchall()}
+    if "image_url" not in columns:
+        cur.execute("ALTER TABLE recipes ADD COLUMN image_url TEXT;")
+        conn.commit()
 
-    benefits = [
-        ("Immunity", "Supports immune system health and recovery."),
-        ("Strength", "Aids muscle support and daily strength."),
-        ("Anti-virality", "Packed with antioxidants to support wellness."),
-        ("Energy", "Helps keep energy levels steady through the day."),
-    ]
 
-    recipes = [
-        {
-            "name": "Sunrise Mango Boost",
-            "description": "Tropical and bright with a creamy finish.",
-            "instructions": [
-                "Add almond milk to the blender.",
-                "Add mango, banana, and honey.",
-                "Blend until smooth and creamy.",
-                "Top with chia seeds before serving.",
-            ],
-            "ingredients": {
-                "Mango": ("1 cup", "2 cups", None),
-                "Banana": ("1/2", "1", None),
-                "Almond Milk": ("3/4 cup", "1 1/2 cups", None),
-                "Honey": ("1 tsp", "2 tsp", None),
-                "Chia Seeds": ("1 tsp", "2 tsp", None),
-            },
-            "benefits": {"Immunity": 4, "Energy": 5, "Strength": 3, "Anti-virality": 4},
-        },
-        {
-            "name": "Berry Shield",
-            "description": "A berry-forward blend for a crisp, cool taste.",
-            "instructions": [
-                "Add almond milk and yogurt to the blender.",
-                "Add strawberries and blueberries.",
-                "Blend until velvety.",
-                "Pour and enjoy immediately.",
-            ],
-            "ingredients": {
-                "Strawberry": ("1 cup", "2 cups", None),
-                "Blueberry": ("1/2 cup", "1 cup", None),
-                "Greek Yogurt": ("1/2 cup", "1 cup", None),
-                "Almond Milk": ("1/2 cup", "1 cup", None),
-            },
-            "benefits": {"Immunity": 5, "Energy": 4, "Strength": 2, "Anti-virality": 5},
-        },
-        {
-            "name": "Green Strength",
-            "description": "Leafy greens balanced with a touch of honey.",
-            "instructions": [
-                "Add almond milk and spinach.",
-                "Add kale, banana, and honey.",
-                "Blend until bright green and smooth.",
-                "Serve chilled.",
-            ],
-            "ingredients": {
-                "Spinach": ("1 cup", "2 cups", None),
-                "Kale": ("1/2 cup", "1 cup", None),
-                "Banana": ("1/2", "1", None),
-                "Honey": ("1 tsp", "2 tsp", None),
-                "Almond Milk": ("3/4 cup", "1 1/2 cups", None),
-            },
-            "benefits": {"Immunity": 4, "Energy": 3, "Strength": 5, "Anti-virality": 4},
-        },
-        {
-            "name": "Protein Orchard",
-            "description": "Creamy protein-packed smoothie with orchard fruit.",
-            "instructions": [
-                "Add almond milk and Greek yogurt.",
-                "Add mango, banana, and chia seeds.",
-                "Blend until thick and smooth.",
-                "Let sit 1 minute for chia to hydrate.",
-            ],
-            "ingredients": {
-                "Greek Yogurt": ("3/4 cup", "1 1/2 cups", None),
-                "Mango": ("1/2 cup", "1 cup", None),
-                "Banana": ("1/2", "1", None),
-                "Chia Seeds": ("1 tsp", "2 tsp", None),
-                "Almond Milk": ("1/2 cup", "1 cup", None),
-            },
-            "benefits": {"Immunity": 3, "Energy": 4, "Strength": 5, "Anti-virality": 3},
-        },
-        {
-            "name": "Garden Berry Glow",
-            "description": "Refreshing greens with a berry sparkle.",
-            "instructions": [
-                "Add almond milk to the blender.",
-                "Add spinach, strawberries, and blueberries.",
-                "Blend until smooth and frothy.",
-                "Finish with a drizzle of honey.",
-            ],
-            "ingredients": {
-                "Spinach": ("1/2 cup", "1 cup", None),
-                "Strawberry": ("3/4 cup", "1 1/2 cups", None),
-                "Blueberry": ("1/3 cup", "2/3 cup", None),
-                "Honey": ("1 tsp", "2 tsp", None),
-                "Almond Milk": ("3/4 cup", "1 1/2 cups", None),
-            },
-            "benefits": {"Immunity": 5, "Energy": 4, "Strength": 3, "Anti-virality": 5},
-        },
-        {
-            "name": "Tropical Green Wave",
-            "description": "Pineapple freshness with leafy greens and coconut water.",
-            "instructions": [
-                "Add coconut water to the blender.",
-                "Add pineapple, spinach, and kale.",
-                "Blend until smooth and bright.",
-                "Taste and add a touch of honey if desired.",
-            ],
-            "ingredients": {
-                "Pineapple": ("3/4 cup", "1 1/2 cups", None),
-                "Spinach": ("1/2 cup", "1 cup", None),
-                "Kale": ("1/2 cup", "1 cup", None),
-                "Coconut Water": ("1 cup", "2 cups", None),
-                "Honey": ("1 tsp", "2 tsp", None),
-            },
-            "benefits": {"Immunity": 4, "Energy": 5, "Strength": 3, "Anti-virality": 4},
-        },
-        {
-            "name": "Cocoa Oat Lift",
-            "description": "Creamy cocoa oats with a gentle sweetness.",
-            "instructions": [
-                "Add almond milk and oats to the blender.",
-                "Add banana, Greek yogurt, and cocoa powder.",
-                "Blend until thick and silky.",
-                "Serve immediately.",
-            ],
-            "ingredients": {
-                "Oats": ("1/3 cup", "2/3 cup", None),
-                "Almond Milk": ("1 cup", "2 cups", None),
-                "Banana": ("1/2", "1", None),
-                "Greek Yogurt": ("1/3 cup", "2/3 cup", None),
-                "Cocoa Powder": ("1 tsp", "2 tsp", None),
-            },
-            "benefits": {"Immunity": 3, "Energy": 4, "Strength": 4, "Anti-virality": 3},
-        },
-        {
-            "name": "Avocado Berry Silk",
-            "description": "Velvety avocado balanced with bright berries.",
-            "instructions": [
-                "Add almond milk and avocado.",
-                "Add strawberries, blueberries, and honey.",
-                "Blend until creamy and smooth.",
-                "Pour into chilled glasses.",
-            ],
-            "ingredients": {
-                "Avocado": ("1/2", "1", None),
-                "Strawberry": ("1/2 cup", "1 cup", None),
-                "Blueberry": ("1/3 cup", "2/3 cup", None),
-                "Almond Milk": ("3/4 cup", "1 1/2 cups", None),
-                "Honey": ("1 tsp", "2 tsp", None),
-            },
-            "benefits": {"Immunity": 4, "Energy": 3, "Strength": 4, "Anti-virality": 4},
-        },
-        {
-            "name": "Pineapple Protein Splash",
-            "description": "Protein-rich tropical blend with yogurt.",
-            "instructions": [
-                "Add almond milk and Greek yogurt to the blender.",
-                "Add pineapple and mango.",
-                "Blend until smooth and creamy.",
-                "Sprinkle chia seeds on top.",
-            ],
-            "ingredients": {
-                "Pineapple": ("1/2 cup", "1 cup", None),
-                "Mango": ("1/2 cup", "1 cup", None),
-                "Greek Yogurt": ("1/2 cup", "1 cup", None),
-                "Almond Milk": ("1/2 cup", "1 cup", None),
-                "Chia Seeds": ("1 tsp", "2 tsp", None),
-            },
-            "benefits": {"Immunity": 4, "Energy": 4, "Strength": 5, "Anti-virality": 3},
-        },
-        {
-            "name": "Coconut Mango Recharge",
-            "description": "Hydrating coconut water with mango and spinach.",
-            "instructions": [
-                "Add coconut water to the blender.",
-                "Add mango, banana, and spinach.",
-                "Blend until smooth and vibrant.",
-                "Serve over ice if desired.",
-            ],
-            "ingredients": {
-                "Coconut Water": ("1 cup", "2 cups", None),
-                "Mango": ("1/2 cup", "1 cup", None),
-                "Banana": ("1/2", "1", None),
-                "Spinach": ("1/2 cup", "1 cup", None),
-            },
-            "benefits": {"Immunity": 4, "Energy": 5, "Strength": 3, "Anti-virality": 4},
-        },
-    ]
+def ensure_recipe_favorite_column(conn: sqlite3.Connection) -> None:
+    cur = conn.cursor()
+    cur.execute("PRAGMA table_info(recipes);")
+    columns = {row["name"] for row in cur.fetchall()}
+    if "is_favorite" not in columns:
+        cur.execute("ALTER TABLE recipes ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0;")
+        conn.commit()
+
+
+def load_seed_json() -> dict:
+    if not SEED_JSON_PATH.exists():
+        raise FileNotFoundError(f"Seed file not found: {SEED_JSON_PATH}")
+    with SEED_JSON_PATH.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def clear_seed_data(conn: sqlite3.Connection) -> None:
+    cur = conn.cursor()
+    cur.executescript(
+        """
+        DELETE FROM recipe_ingredients;
+        DELETE FROM recipe_benefits;
+        DELETE FROM recipes;
+        DELETE FROM ingredients;
+        DELETE FROM benefits;
+        """
+    )
+    conn.commit()
+
+
+def seed_from_json(conn: sqlite3.Connection, data: dict, reset: bool = False) -> None:
+    if reset:
+        clear_seed_data(conn)
+
+    ingredients = data["ingredients"]
+    benefits = data["benefits"]
+    recipes = data["recipes"]
 
     cur = conn.cursor()
 
     cur.executemany("INSERT INTO ingredients (name) VALUES (?);", [(i,) for i in ingredients])
     cur.executemany(
         "INSERT INTO benefits (name, description) VALUES (?, ?);",
-        benefits,
+        [(b["name"], b["description"]) for b in benefits],
     )
 
     conn.commit()
@@ -309,19 +159,34 @@ def seed_data(conn: sqlite3.Connection) -> None:
 
     for recipe in recipes:
         cur.execute(
-            "INSERT INTO recipes (name, description, instructions_json) VALUES (?, ?, ?);",
-            (recipe["name"], recipe["description"], json.dumps(recipe["instructions"])),
+            """
+            INSERT INTO recipes (name, description, instructions_json, image_url, is_favorite)
+            VALUES (?, ?, ?, ?, ?);
+            """,
+            (
+                recipe["name"],
+                recipe["description"],
+                json.dumps(recipe["instructions"]),
+                recipe.get("image_url"),
+                1 if recipe.get("is_favorite") else 0,
+            ),
         )
         recipe_id = cur.lastrowid
 
-        for ingredient_name, (qty_1, qty_2, unit) in recipe["ingredients"].items():
+        for ingredient_name, ingredient_data in recipe["ingredients"].items():
             cur.execute(
                 """
                 INSERT INTO recipe_ingredients
                     (recipe_id, ingredient_id, qty_1, qty_2, unit)
                 VALUES (?, ?, ?, ?, ?);
                 """,
-                (recipe_id, ingredient_map[ingredient_name], qty_1, qty_2, unit),
+                (
+                    recipe_id,
+                    ingredient_map[ingredient_name],
+                    ingredient_data["qty_1"],
+                    ingredient_data["qty_2"],
+                    ingredient_data.get("unit"),
+                ),
             )
 
         for benefit_name, rating in recipe["benefits"].items():
@@ -344,7 +209,13 @@ def fetch_all_ingredients(conn: sqlite3.Connection) -> list[str]:
 
 def fetch_recipes(conn: sqlite3.Connection) -> list[Recipe]:
     cur = conn.cursor()
-    cur.execute("SELECT id, name, description, instructions_json FROM recipes ORDER BY name;")
+    cur.execute(
+        """
+        SELECT id, name, description, instructions_json, image_url, is_favorite
+        FROM recipes
+        ORDER BY name;
+        """
+    )
     rows = cur.fetchall()
     return [
         Recipe(
@@ -352,6 +223,8 @@ def fetch_recipes(conn: sqlite3.Connection) -> list[Recipe]:
             name=row["name"],
             description=row["description"],
             instructions=json.loads(row["instructions_json"]),
+            image_url=row["image_url"],
+            is_favorite=bool(row["is_favorite"]),
         )
         for row in rows
     ]
@@ -394,6 +267,27 @@ def fetch_recipe_benefits(conn: sqlite3.Connection, recipe_id: int) -> list[dict
         {"name": row["name"], "description": row["description"], "rating": row["rating"]}
         for row in cur.fetchall()
     ]
+
+
+def fetch_all_benefits(conn: sqlite3.Connection) -> list[dict]:
+    cur = conn.cursor()
+    cur.execute("SELECT name, description FROM benefits ORDER BY name;")
+    return [{"name": row["name"], "description": row["description"]} for row in cur.fetchall()]
+
+
+def fetch_benefit_ratings(conn: sqlite3.Connection) -> dict[int, dict[str, int]]:
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT rb.recipe_id AS recipe_id, b.name AS benefit_name, rb.rating AS rating
+        FROM recipe_benefits rb
+        JOIN benefits b ON b.id = rb.benefit_id;
+        """
+    )
+    ratings: dict[int, dict[str, int]] = {}
+    for row in cur.fetchall():
+        ratings.setdefault(row["recipe_id"], {})[row["benefit_name"]] = row["rating"]
+    return ratings
 
 
 def filter_recipes(
@@ -446,14 +340,30 @@ def index():
     include = parse_multi_value("include")
     exclude = parse_multi_value("exclude")
     have = parse_multi_value("have")
+    prioritize = parse_multi_value("prioritize")
+    favorites_only = request.args.get("favorites_only") == "1"
 
     conn = get_db()
     all_ingredients = fetch_all_ingredients(conn)
+    all_benefits = fetch_all_benefits(conn)
     recipes = fetch_recipes(conn)
 
-    if include or exclude or have:
+    if favorites_only:
+        recipes = [recipe for recipe in recipes if recipe.is_favorite]
+    elif include or exclude or have:
         allowed_ids = set(filter_recipes(conn, include, exclude, have))
         recipes = [recipe for recipe in recipes if recipe.id in allowed_ids]
+
+    if prioritize:
+        benefit_ratings = fetch_benefit_ratings(conn)
+
+        def priority_score(recipe: Recipe) -> int:
+            ratings = benefit_ratings.get(recipe.id, {})
+            return sum(ratings.get(name, 0) for name in prioritize)
+
+        recipes.sort(key=priority_score, reverse=True)
+
+    recipes.sort(key=lambda recipe: recipe.is_favorite, reverse=True)
 
     recipe_cards = []
     for recipe in recipes:
@@ -474,7 +384,10 @@ def index():
         include=include,
         exclude=exclude,
         have=have,
+        prioritize=prioritize,
+        favorites_only=favorites_only,
         ingredients=all_ingredients,
+        benefits=all_benefits,
     )
 
 
@@ -484,7 +397,11 @@ def recipe_detail(recipe_id: int):
     conn = get_db()
     cur = conn.cursor()
     cur.execute(
-        "SELECT id, name, description, instructions_json FROM recipes WHERE id = ?;",
+        """
+        SELECT id, name, description, instructions_json, image_url, is_favorite
+        FROM recipes
+        WHERE id = ?;
+        """,
         (recipe_id,),
     )
     row = cur.fetchone()
@@ -497,6 +414,8 @@ def recipe_detail(recipe_id: int):
         name=row["name"],
         description=row["description"],
         instructions=json.loads(row["instructions_json"]),
+        image_url=row["image_url"],
+        is_favorite=bool(row["is_favorite"]),
     )
     ingredients = fetch_recipe_ingredients(conn, recipe_id, servings)
     benefits = fetch_recipe_benefits(conn, recipe_id)
@@ -509,6 +428,25 @@ def recipe_detail(recipe_id: int):
         ingredients=ingredients,
         benefits=benefits,
     )
+
+
+@app.post("/recipe/<int:recipe_id>/favorite")
+def toggle_favorite(recipe_id: int):
+    conn = get_db()
+    ensure_schema(conn)
+    cur = conn.cursor()
+    cur.execute(
+        """
+        UPDATE recipes
+        SET is_favorite = CASE WHEN is_favorite = 1 THEN 0 ELSE 1 END
+        WHERE id = ?;
+        """,
+        (recipe_id,),
+    )
+    conn.commit()
+    conn.close()
+    next_url = request.form.get("next") or url_for("index")
+    return redirect(next_url)
 
 
 if __name__ == "__main__":
