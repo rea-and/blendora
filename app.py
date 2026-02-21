@@ -15,8 +15,15 @@ DB_PATH = BASE_DIR / "data" / "blendora.db"
 SEED_JSON_PATH = BASE_DIR / "data" / "blendora.json"
 
 app = Flask(__name__)
-# Trusts up to 2 hops for all headers
-app.wsgi_app = ProxyFix(app.wsgi_app, x_for=2, x_proto=2, x_host=2, x_prefix=2)
+# Trusts 1 hop (Apache) for all headers
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
+
+@app.before_request
+def log_request_info():
+    # Debug print to help identify if headers are reaching the app
+    app.logger.debug("Headers: %s", request.headers)
+    app.logger.debug("Script Name: %s", request.environ.get("SCRIPT_NAME"))
 
 
 @dataclass
