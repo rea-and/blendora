@@ -453,6 +453,15 @@ def toggle_favorite(recipe_id: int):
     return redirect(next_url)
 
 
+@app.cli.command("reset-db")
+def reset_db_command():
+    """Drops all tables and re-seeds from blendora.json."""
+    conn = get_db()
+    seed_from_json(conn, load_seed_json(), reset=True)
+    conn.close()
+    print("Database reset and re-seeded from blendora.json.")
+
+
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
