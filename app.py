@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Iterable
 
 from flask import Flask, redirect, render_template, request, url_for
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -14,6 +15,8 @@ DB_PATH = BASE_DIR / "data" / "blendora.db"
 SEED_JSON_PATH = BASE_DIR / "data" / "blendora.json"
 
 app = Flask(__name__)
+# Trusts up to 2 hops for all headers
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=2, x_proto=2, x_host=2, x_prefix=2)
 
 
 @dataclass
