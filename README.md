@@ -20,5 +20,14 @@ Open `http://127.0.0.1:5000` in your browser.
 - To reload the database after editing the JSON:
 
 ```bash
-python scripts/update_db.py --reset
+flask reset-db
 ```
+
+## Production Hosting
+
+When hosting Blendora behind a reverse proxy (like Apache or Nginx) under a subpath (e.g., `/blendora`), the application uses `ProxyFix` middleware to handle URL generation correctly.
+
+### Required Header:
+Ensure your proxy sends the `X-Forwarded-Prefix` header:
+- **Apache**: `RequestHeader set X-Forwarded-Prefix "/blendora"`
+- **Protocol**: If using SSL, also send `RequestHeader set X-Forwarded-Proto "https"` to avoid redirect loops.
